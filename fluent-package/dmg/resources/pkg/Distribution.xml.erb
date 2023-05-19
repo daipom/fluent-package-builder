@@ -5,9 +5,13 @@
     <welcome file="welcome.html" mime-type="text/html"/>
     <options customize="never" require-scripts="false"/>
     <choices-outline>
-        <line choice="default"/>
+        <line choice="default">
+            <line choice="com.treasuredata.tdagent"/>
+        </line>
+        <!-- <line choice="com.treasuredata.tdagent"> -->
     </choices-outline>
-    <choice id="default">
-        <pkg-ref id="com.treasuredata.tdagent" version="<%= version %>" onConclusion="none">fluent-package.pkg</pkg-ref>
+    <choice id="default"/>
+    <choice id="com.treasuredata.tdagent">
+        <pkg-ref id="com.treasuredata.tdagent"/>
     </choice>
-</installer-gui-script>
+    <pkg-ref id="com.treasuredata.tdagent" version="<%= version %>" onConclusion="none">fluent-package.pkg</pkg-ref></installer-gui-script>
