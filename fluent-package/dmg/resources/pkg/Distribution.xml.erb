@@ -10,8 +10,9 @@
         </line>
         <line choice="com.treasuredata.tdagent"/>
     </choices-outline>
-    <choice id="default"/>
-    <choice id="com.treasuredata.tdagent">
+    <choice id="default" title="foo"/>
+    <choice id="com.treasuredata.tdagent" title="bar">
         <pkg-ref id="com.treasuredata.tdagent"/>
     </choice>
-    <pkg-ref id="com.treasuredata.tdagent" version="<%= version %>" onConclusion="none">fluent-package.pkg</pkg-ref></installer-gui-script>
+    <pkg-ref id="com.treasuredata.tdagent" version="<%= version %>" onConclusion="none">fluent-package.pkg</pkg-ref>
+</installer-gui-script>
