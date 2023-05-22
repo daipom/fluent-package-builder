@@ -4,11 +4,11 @@
     <background file="background.png" alignment="bottomleft" mime-type="image/png"/>
     <license file="license.rtf" mime-type="text/html"/>
     <welcome file="welcome.html" mime-type="text/html"/>
-    <options customize="never" require-scripts="false"/>
+    <options require-scripts="false"/>
     <choices-outline>
         <line choice="default"/>
     </choices-outline>
-    <choice id="default">
+    <choice id="default" title="default">
         <pkg-ref id="com.treasuredata.tdagent" version="<%= version %>" onConclusion="none">fluent-package.pkg</pkg-ref>
     </choice>
 </installer-gui-script>
