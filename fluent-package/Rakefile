@@ -509,10 +509,11 @@ class BuildTask
 
       desc "Create bin script files from template"
       task :bin_scripts do
+        gem_script = "usr/sbin/#{PACKAGE_DIR}-gem"
         scripts = [
           "usr/bin/td",
           "usr/sbin/#{SERVICE_NAME}",
-          "usr/sbin/#{PACKAGE_DIR}-gem",
+          gem_script,
         ]
         scripts.each do |script|
           src = template_path("#{script}.erb")
@@ -523,6 +524,11 @@ class BuildTask
                  end
           render_template(dest, src, template_params, { mode: 0755 })
         end
+        # Overwrite Fluentd's "fluent-gem" because we don't need it and it is
+        # confusing with "fluent-gem" of this package.
+        src = template_path("#{gem_script}.erb")
+        dest = File.join(staging_bindir, File.basename(gem_script))
+        render_template(dest, src, template_params, { mode: 0755 })
       end
 
       desc "Create launchctl configuration files from template"
