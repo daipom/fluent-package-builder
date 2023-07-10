@@ -4,13 +4,8 @@ title Fluent-package post migration script
 if exist "%~dp0..\..\td-agent" (
   setlocal enabledelayedexpansion
   sc query state=inactive | findstr fluentdwinsvc
-  if !ERRORLEVEL! == 1 (
-    @rem NOTE: If the service is not stopped here, it is a BUG.
-    @rem This state can cause fatal problems with the installation, so we should cancel this process.
-    @rem (If trying to stop it by the command such as `$ net stop fluentdwinsvc`, it can fail as "The service is starting or stopping.  Please try again later.".)
-    echo "WARN: Active fluentdwinsvc service is detected. This is unexpected. Migration process has been canceled."
-    exit /b 1
-  )
+  echo "WARN: Active fluentdwinsvc service is detected. This is unexpected. Migration process has been canceled."
+  exit /b 1
   endlocal
 
   if not exist "%~dp0..\etc\fluent" (
