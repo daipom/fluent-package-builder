@@ -1,7 +1,6 @@
 name: Apt based Linux
 on:
   push:
-    branches: [master]
   pull_request:
 jobs:
   build:
@@ -12,7 +11,6 @@ jobs:
         label:
           - Debian GNU/Linux bullseye amd64
           - Ubuntu Focal amd64
-          - Ubuntu Jammy amd64
         include:
           - label: Debian GNU/Linux bullseye amd64
             rake-job: debian-bullseye
@@ -20,9 +18,6 @@ jobs:
           - label: Ubuntu Focal amd64
             rake-job: ubuntu-focal
             test-docker-image: ubuntu:focal
-          - label: Ubuntu Jammy amd64
-            rake-job: ubuntu-jammy
-            test-docker-image: ubuntu:jammy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -96,7 +91,6 @@ jobs:
         distribution:
           - debian-bullseye
           - ubuntu-focal
-          - ubuntu-jammy
     steps:
       - uses: actions/checkout@master
       - uses: actions/download-artifact@master
