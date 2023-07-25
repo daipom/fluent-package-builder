@@ -11,7 +11,7 @@ systemctl status --no-pager fluentd
 
 sleep 3
 test -e /var/log/fluent/fluentd.log
-(! grep -q -e '\[warn\]' -e '\[error\]' -e '\[fatal\]' /var/log/fluent/fluentd.log)
+(! grep -e '\[warn\]' -e '\[error\]' -e '\[fatal\]' /var/log/fluent/fluentd.log)
 
 sudo apt remove -y fluent-package
 

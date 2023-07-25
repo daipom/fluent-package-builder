@@ -56,7 +56,7 @@ test $(eval $env_vars && echo $FLUENT_SOCKET) = "/var/run/fluent/fluentd.sock"
 # Test: logs
 sleep 3
 test -e /var/log/fluent/fluentd.log
-(! grep -q -e '\[warn\]' -e '\[error\]' -e '\[fatal\]' /var/log/fluent/fluentd.log)
+(! grep -e '\[warn\]' -e '\[error\]' -e '\[fatal\]' /var/log/fluent/fluentd.log)
 
 # Uninstall
 sudo $DNF remove -y fluent-package

@@ -69,7 +69,7 @@ test $(eval $env_vars && echo $FLUENT_SOCKET) = "/var/run/fluent/fluentd.sock"
 # Test: No error logs
 # (v4 default config outputs 'warn' log, so we should check only 'error' and 'fatal' logs)
 sleep 3
-(! grep -q -e '\[error\]' -e '\[fatal\]' /var/log/td-agent/td-agent.log)
+(! grep -e '\[error\]' -e '\[fatal\]' /var/log/td-agent/td-agent.log)
 
 # Test: logrotate config migration
 test -e /etc/logrotate.d/td-agent
