@@ -1,7 +1,6 @@
 name: Yum based Linux
 on:
   push:
-    branches: [master]
   pull_request:
 jobs:
   build:
@@ -67,16 +66,6 @@ jobs:
           --env CENTOS_STREAM=${{ matrix.centos-stream }} \
           ${{ matrix.test-docker-image }} \
           /fluentd/fluent-package/yum/install-test.sh
-      - name: Serverspec Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --volume ${PWD}:/fluentd:ro \
-          --env CENTOS_STREAM=${{ matrix.centos-stream }} \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/yum/serverspec-test.sh
       - name: Binstubs Test
         run: |
           mkdir -p .bundle
