@@ -14,12 +14,12 @@ gem "sigdump", "0.2.5"
 gem "http_parser.rb", "0.8.0"
 gem "yajl-ruby", "1.4.3"
 gem "serverengine", '2.3.2'
-gem "msgpack", "1.7.1"
-gem "oj", "3.15.0"
+gem "msgpack", "1.7.2"
+gem "oj", "3.16.1"
 gem "tzinfo", "2.0.6"
 gem "tzinfo-data", "1.2023.3"
 gem "async", "1.31.0"
-gem "async-http", "0.60.2"
+gem "async-http", "0.61.0"
 gem "webrick", "1.8.1"
 
 # CVE-2023-36617: should be removed after we update Ruby to 3.2.3 or later
