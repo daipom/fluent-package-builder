@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/fluent/fluentd
-  revision: d5685ada81ac89a35a79965f1e94bbe5952a5d3a
-  ref: d5685ada81ac89a35a79965f1e94bbe5952a5d3a
+  revision: d3cf2e0f95a0ad88b9897197db6c5152310f114f
+  ref: d3cf2e0f95a0ad88b9897197db6c5152310f114f
   specs:
-    fluentd (1.16.2)
+    fluentd (1.16.3)
       bundler
       certstore_c (~> 0.1.7)
       cool.io (>= 1.4.5, < 2.0.0)
@@ -29,15 +29,15 @@ GEM
       console (~> 1.10)
       nio4r (~> 2.3)
       timers (~> 4.1)
-    async-http (0.60.2)
+    async-http (0.61.0)
       async (>= 1.25)
       async-io (>= 1.28)
       async-pool (>= 0.2)
-      protocol-http (~> 0.24.0)
-      protocol-http1 (~> 0.15.0)
+      protocol-http (~> 0.25.0)
+      protocol-http1 (~> 0.16.0)
       protocol-http2 (~> 0.15.0)
       traces (>= 0.10.0)
-    async-io (1.36.1)
+    async-io (1.37.0)
       async
     async-pool (0.4.0)
       async (>= 1.25)
@@ -180,13 +180,13 @@ GEM
       bindata (~> 2.4.8)
     ltsv (0.1.2)
     mini_portile2 (2.8.2)
-    msgpack (1.7.1)
+    msgpack (1.7.2)
     multi_json (1.15.0)
-    nio4r (2.5.9)
+    nio4r (2.6.0)
     nokogiri (1.15.3)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
-    oj (3.15.0)
+    oj (3.16.1)
     opensearch-api (2.2.0)
       multi_json
     opensearch-ruby (2.1.0)
@@ -198,8 +198,8 @@ GEM
     parallel (1.20.1)
     prometheus-client (2.1.0)
     protocol-hpack (1.4.2)
-    protocol-http (0.24.7)
-    protocol-http1 (0.15.1)
+    protocol-http (0.25.0)
+    protocol-http1 (0.16.0)
       protocol-http (~> 0.22)
     protocol-http2 (0.15.1)
       protocol-hpack (~> 1.4)
@@ -273,7 +273,7 @@ PLATFORMS
 
 DEPENDENCIES
   async (= 1.31.0)
-  async-http (= 0.60.2)
+  async-http (= 0.61.0)
   aws-partitions (= 1.785.0)
   aws-sdk-core (= 3.178.0)
   aws-sdk-kms (= 1.71.0)
@@ -312,9 +312,9 @@ DEPENDENCIES
   httpclient (= 2.8.3)
   jmespath (= 1.6.2)
   mini_portile2 (= 2.8.2)
-  msgpack (= 1.7.1)
+  msgpack (= 1.7.2)
   nokogiri (= 1.15.3)
-  oj (= 3.15.0)
+  oj (= 3.16.1)
   opensearch-ruby (= 2.1.0)
   prometheus-client (= 2.1.0)
   rake
