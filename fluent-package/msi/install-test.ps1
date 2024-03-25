@@ -22,9 +22,10 @@ $timeSpans = 0..2 | % {
     Stop-Service fluentdwinsvc | Out-Null
     Start-Sleep 15 | Out-Null
 }
+$timeSpans | %{ Write-Host $_.TotalSeconds }
 if (($timeSpans | Measure-Object -Property TotalSeconds -Maximum).Maximum -gt 10) {
     Write-Host "Launching is abnormally slow:"
-    $timeSpans | %{ Write-Host $_.TotalSeconds }
+    # $timeSpans | %{ Write-Host $_.TotalSeconds }
     [Environment]::Exit(1)
 }
 

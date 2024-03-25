@@ -1,9 +1,6 @@
 name: Windows
 on:
   push:
-    branches:
-      - master
-      - fluent-package-lts-v5
   pull_request:
 jobs:
   build:
