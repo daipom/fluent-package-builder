@@ -4,14 +4,30 @@ $msi = ((Get-Item "C:\\fluentd\\fluent-package\\msi\\repositories\\fluent-packag
 Write-Host "Installing ${msi} ..."
 
 Start-Process msiexec -ArgumentList "/i", $msi, "/quiet" -Wait -NoNewWindow
-Start-Service fluentdwinsvc
+$initialStatus = (Get-Service fluentdwinsvc).Status
+if ($initialStatus -ne "Stopped") {
+    Write-Host "The initial status must be 'Stopped', but it was '${initialStatus}'."
+    [Environment]::Exit(1)
+}
 
 $ENV:PATH="C:\\opt\\fluent\\bin;" + $ENV:PATH
 $ENV:PATH="C:\\opt\\fluent;" + $ENV:PATH
 
 td-agent --version
 
-Start-Sleep 3
+Write-Host "Measuring times to start the service..."
+$timeSpans = 0..2 | % {
+    Measure-Command { Start-Service fluentdwinsvc }
+    Start-Sleep 15 | Out-Null
+    Stop-Service fluentdwinsvc | Out-Null
+    Start-Sleep 15 | Out-Null
+}
+if (($timeSpans | Measure-Object -Property TotalSeconds -Maximum).Maximum -gt 10) {
+    Write-Host "Launching is abnormally slow:"
+    $timeSpans | %{ Write-Host $_.TotalSeconds }
+    [Environment]::Exit(1)
+}
+
 Get-ChildItem "C:\\opt\\fluent\\*.log" | %{
     if (Select-String -Path $_ -Pattern "[warn]", "[error]", "[fatal]" -SimpleMatch -Quiet) {
         Write-Host "There are abnormal level logs in ${_}:"
