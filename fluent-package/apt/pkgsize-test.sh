@@ -25,6 +25,7 @@ for v in `git tag | grep "^v" | sort -r`; do
     PREVIOUS_VERSIONS+=(`echo $v | sed -e 's/v//'`)
 done
 
+PREV_DEB_FOUND=0
 case ${DISTRIBUTION} in
     debian)
 	BASE_URI=https://packages.treasuredata.com/5/debian/${CODE_NAME}
@@ -35,6 +36,7 @@ case ${DISTRIBUTION} in
 	    set +e
 	    wget ${PREVIOUS_DEB}
 	    if [ $? -eq 0 ]; then
+	       PREV_DEB_FOUND=1
 	       break
 	    fi
 	done
@@ -48,6 +50,7 @@ case ${DISTRIBUTION} in
 	    set +e
 	    wget ${PREVIOUS_DEB}
 	    if [ $? -eq 0 ]; then
+	        PREV_DEB_FOUND=1
 		break
 	    fi
 	done
@@ -59,6 +62,11 @@ case ${DISTRIBUTION} in
 esac
 
 set -e
+if [ $PREV_DEB_FOUND -ne 1 ]; then
+	echo "The previous version of deb package is not shipped for ${code_name}, so package size check for ${code_name} is disabled"
+	exit 0
+fi
+
 PREVIOUS_SIZE=$(stat -c %s $BASE_NAME)
 THRESHOLD_SIZE=`echo "$PREVIOUS_SIZE * 1.2" | bc -l | cut -d. -f1`
 DEB=$(find $REPOSITORIES_DIR/${DISTRIBUTION}/pool/${CODE_NAME}/${CHANNEL}/f/fluent-package/fluent-package_*${ARCH}.deb | sort -n | tail -1)
