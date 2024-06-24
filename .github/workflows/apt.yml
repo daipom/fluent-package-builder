@@ -1,9 +1,6 @@
 name: Apt based Linux
 on:
   push:
-    branches:
-      - master
-      - fluent-package-lts-v5
   pull_request:
 jobs:
   build:
@@ -12,24 +9,8 @@ jobs:
       fail-fast: false
       matrix:
         label:
-          - Debian GNU/Linux bullseye amd64
-          - Debian GNU/Linux bookworm amd64
-          - Ubuntu Focal amd64
-          - Ubuntu Jammy amd64
           - Ubuntu Noble amd64
         include:
-          - label: Debian GNU/Linux bullseye amd64
-            rake-job: debian-bullseye
-            test-docker-image: debian:bullseye
-          - label: Debian GNU/Linux bookworm amd64
-            rake-job: debian-bookworm
-            test-docker-image: debian:bookworm
-          - label: Ubuntu Focal amd64
-            rake-job: ubuntu-focal
-            test-docker-image: ubuntu:focal
-          - label: Ubuntu Jammy amd64
-            rake-job: ubuntu-jammy
-            test-docker-image: ubuntu:jammy
           - label: Ubuntu Noble amd64
             rake-job: ubuntu-noble
             test-docker-image: ubuntu:noble
@@ -118,10 +99,6 @@ jobs:
       fail-fast: false
       matrix:
         label:
-          - Debian GNU/Linux bullseye amd64
-          - Debian GNU/Linux bookworm amd64
-          - Ubuntu Focal amd64
-          - Ubuntu Jammy amd64
           - Ubuntu Noble amd64
         test-file:
           - "update-from-v4.sh"
@@ -131,12 +108,6 @@ jobs:
           - "install-newly.sh v5"
           - "install-newly.sh lts"
         include:
-          - label: Debian GNU/Linux bullseye amd64
-            rake-job: debian-bullseye
-            test-lxc-image: images:debian/11
-          - label: Debian GNU/Linux bookworm amd64
-            rake-job: debian-bookworm
-            test-lxc-image: images:debian/12
           - label: Ubuntu Focal amd64
             rake-job: ubuntu-focal
             test-lxc-image: ubuntu:20.04
