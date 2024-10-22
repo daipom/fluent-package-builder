@@ -339,7 +339,9 @@ if [ $1 -eq 1 ]; then
   . %{_sysconfdir}/sysconfig/@SERVICE_NAME@
   echo "postun FLUENT_PACKAGE_SERVICE_RESTART: $FLUENT_PACKAGE_SERVICE_RESTART"
   if [ "$FLUENT_PACKAGE_SERVICE_RESTART" = "auto" ]; then
-    pid=$(systemctl show fluentd --property=MainPID --value)
+    # systemctl ... --property=MainPID --value is available since systemd 230 or later.
+    # thus for amazonlinux:2, it can not be used.
+    pid=$(systemctl show fluentd --property=MainPID | cut -d'=' -f2)
     if [ $pid -gt 0 ]; then
       echo "Kick auto service upgrade mode to MainPID:$pid"
       kill -USR2 $pid
