@@ -46,11 +46,31 @@ jobs:
       - name: Build deb with Docker
         run: |
           rake apt:build APT_TARGETS=${{ matrix.rake-job }}
+      - name: Build v6 deb with Docker
+        run: |
+          git config user.email "fluentd@googlegroups.com"
+          git config user.name "Fluentd developers"
+          git am fluent-package/bump-version-v6.patch
+          rake apt:build APT_TARGETS=${{ matrix.rake-job }}
+      - name: Relocate packages
+        run: |
+          cp -r fluent-package/apt/repositories fluent-package/apt/v6repositories
+          find fluent-package/apt/repositories -name 'fluent-package_6*.deb' | xargs rm -f
+          find fluent-package/apt/repositories -name 'fluent-package-dbgsym_6*.deb' | xargs rm -f
+          find fluent-package/apt/repositories -name 'td-agent_6*.deb' | xargs rm -f
+          find fluent-package/apt/v6repositories -name 'fluent-package_5*.deb' | xargs rm -f
+          find fluent-package/apt/v6repositories -name 'fluent-package-dbgsym_5*.deb' | xargs rm -f
+          find fluent-package/apt/v6repositories -name 'td-agent_5*.deb' | xargs rm -f
       - name: Upload fluent-package deb
         uses: actions/upload-artifact@master
         with:
           name: packages-${{ matrix.rake-job }}
           path: fluent-package/apt/repositories
+      - name: Upload v6 fluent-package deb
+        uses: actions/upload-artifact@master
+        with:
+          name: v6-packages-${{ matrix.rake-job }}
+          path: fluent-package/apt/v6repositories
       - name: Upload fluent-apt-source deb
         uses: actions/upload-artifact@master
         with:
@@ -142,6 +162,7 @@ jobs:
           - "update-to-next-version-service-status.sh enabled inactive"
           - "update-to-next-version-service-status.sh disabled active"
           - "update-to-next-version-service-status.sh disabled inactive"
+          - "update-to-next-major-version.sh"
         include:
           - label: Debian bullseye amd64
             rake-job: debian-bullseye
@@ -180,6 +201,10 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: packages-${{ matrix.rake-job }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: v6-packages-${{ matrix.rake-job }}
+          path: v6repositories
       - uses: actions/download-artifact@v4
         with:
           name: packages-apt-source-${{ matrix.rake-job }}
