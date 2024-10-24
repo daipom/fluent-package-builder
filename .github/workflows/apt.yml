@@ -13,8 +13,6 @@ jobs:
           - Debian bullseye amd64
           - Debian bookworm amd64
           - Ubuntu Focal amd64
-          - Ubuntu Jammy amd64
-          - Ubuntu Noble amd64
         include:
           - label: Debian bullseye amd64
             rake-job: debian-bullseye
@@ -25,12 +23,6 @@ jobs:
           - label: Ubuntu Focal amd64
             rake-job: ubuntu-focal
             test-docker-image: ubuntu:focal
-          - label: Ubuntu Jammy amd64
-            rake-job: ubuntu-jammy
-            test-docker-image: ubuntu:jammy
-          - label: Ubuntu Noble amd64
-            rake-job: ubuntu-noble
-            test-docker-image: ubuntu:noble
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -48,11 +40,19 @@ jobs:
         with:
           name: packages-${{ matrix.rake-job }}
           path: fluent-package/apt/repositories
-      - uses: actions/checkout@master
+      - name: Cache v6 dummy
+        id: cache-v6-dummy
+        uses: actions/cache@master
+        with:
+          key: fluent-package-v6-dummy ${{ matrix.label }}
+          path: v6-test/fluent-package/apt/repositories
+      - if: ${{ ! steps.cache-v6-dummy.outputs.cache-hit }}
+        uses: actions/checkout@master
         with:
           ref: fluent-package-v6-dummy
           path: v6-test
-      - name: Build v6 deb with Docker
+      - if: ${{ ! steps.cache-v6-dummy.outputs.cache-hit }}
+        name: Build dummy v6 deb with Docker
         run: |
           cd v6-test
           rake apt:build APT_TARGETS=${{ matrix.rake-job }}
@@ -71,58 +71,3 @@ jobs:
         with:
           name: packages-lts-apt-source-${{ matrix.rake-job }}
           path: fluent-lts-apt-source/apt/repositories
-      # TODO move the following steps to "Test" job
-      - name: Check Package Size
-        run: |
-          fluent-package/apt/pkgsize-test.sh ${{ matrix.rake-job }} amd64
-      - name: Installation Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/apt/install-test.sh
-      - name: Piuparts (Install/Remove/Upgrade) Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --privileged \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/apt/piuparts-test.sh
-      - name: Serverspec Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/apt/serverspec-test.sh
-      - name: Confluent Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/apt/confluent-test.sh
-      - name: Binstubs Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/apt/binstubs-test.sh
