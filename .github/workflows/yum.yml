@@ -1,9 +1,6 @@
 name: Yum based Linux
 on:
   push:
-    branches:
-      - master
-      - fluent-package-lts-v5
   pull_request:
 concurrency:
   group: ${{ github.head_ref || github.sha }}-${{ github.workflow }}
@@ -18,8 +15,6 @@ jobs:
         label:
           - RockyLinux 8 x86_64
           - AlmaLinux 9 x86_64
-          - Amazon Linux 2 x86_64
-          - Amazon Linux 2023 x86_64
         include:
           - label: RockyLinux 8 x86_64
             rake-job: rockylinux-8
@@ -28,14 +23,6 @@ jobs:
           - label: AlmaLinux 9 x86_64
             rake-job: almalinux-9
             test-docker-image: almalinux:9
-            centos-stream: false
-          - label: Amazon Linux 2 x86_64
-            rake-job: amazonlinux-2
-            test-docker-image: amazonlinux:2
-            centos-stream: false
-          - label: Amazon Linux 2023 x86_64
-            rake-job: amazonlinux-2023
-            test-docker-image: amazonlinux:2023
             centos-stream: false
     runs-on: ubuntu-latest
     steps:
@@ -54,110 +41,6 @@ jobs:
         with:
           name: packages-${{ matrix.rake-job }}
           path: fluent-package/yum/repositories
-      # TODO move the following steps to "Test" job
-      - name: Check Package Size
-        run: |
-          fluent-package/yum/pkgsize-test.sh ${{ matrix.rake-job }} x86_64
-      - name: Installation Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          --env CENTOS_STREAM=${{ matrix.centos-stream }} \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/yum/install-test.sh
-      - name: Serverspec Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          --env CENTOS_STREAM=${{ matrix.centos-stream }} \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/yum/serverspec-test.sh
-      - name: Confluent Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/yum/confluent-test.sh
-      - name: Binstubs Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          --env CENTOS_STREAM=${{ matrix.centos-stream }} \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/yum/binstubs-test.sh
-  v1test:
-    name: Test ${{ matrix.label }} ${{ matrix.test }} (CGroup V1)
-    needs: build
-    runs-on: ubuntu-20.04
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        label:
-          - AmazonLinux 2 x86_64
-          - AmazonLinux 2023 x86_64
-        test:
-          - "update-from-v4.sh"
-          - "downgrade-to-v4.sh"
-          - "install-newly.sh local"
-          - "install-newly.sh v5"
-          - "install-newly.sh lts"
-          - "update-to-next-version.sh"
-          - "update-to-next-version-with-backward-compat-for-v4.sh"
-          - "update-to-next-version-service-status.sh enabled active"
-          - "update-to-next-version-service-status.sh enabled inactive"
-          - "update-to-next-version-service-status.sh disabled active"
-          - "update-to-next-version-service-status.sh disabled inactive"
-        include:
-          - label: AmazonLinux 2 x86_64
-            rake-job: amazonlinux-2
-            lxc-image: images:amazonlinux/2
-          - label: AmazonLinux 2023 x86_64
-            rake-job: amazonlinux-2023
-            lxc-image: images:amazonlinux/2023
-        exclude:
-          - label: AmazonLinux 2023 x86_64
-            test: update-from-v4.sh
-          - label: AmazonLinux 2023 x86_64
-            test: update-to-next-version-with-backward-compat-for-v4.sh
-          - label: AmazonLinux 2023 x86_64
-            test: downgrade-to-v4.sh
-    steps:
-      - uses: actions/checkout@master
-      - uses: actions/download-artifact@v4
-        with:
-          name: packages-${{ matrix.rake-job }}
-      - uses: canonical/setup-lxd@v0.1.1
-      - name: Run diagnostic
-        run: |
-          uname -a
-          echo "::group::snap info lxd"
-          snap info lxd
-          echo "::endgroup::"
-          echo "::group::snap services lxd"
-          snap services lxd
-          echo "::endgroup::"
-          echo "::group::snap logs lxd"
-          sudo snap logs lxd
-          echo "::endgroup::"
-      - name: Run Test ${{ matrix.test }} on ${{ matrix.lxc-image }}
-        run: fluent-package/yum/systemd-test/test.sh ${{ matrix.lxc-image }} ${{ matrix.test }}
 
   v2test:
     name: Test ${{ matrix.label }} ${{ matrix.test }} (CGroup V2)
