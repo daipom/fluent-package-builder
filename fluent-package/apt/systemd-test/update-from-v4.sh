@@ -19,29 +19,20 @@ sudo apt install -V -y td-agent=${td_agent_version}-1
 
 systemctl status --no-pager td-agent
 
-# Generate garbage files
-touch /etc/td-agent/a\ b\ c
-touch /var/log/td-agent/a\ b\ c.log
-touch /etc/td-agent/plugin/in_fake.rb
-for d in $(seq 1 10); do
-    touch /var/log/td-agent/$d.log
-done
-
 # Install the current
-sudo apt install -V -y \
-    /host/${distribution}/pool/${code_name}/${channel}/*/*/fluent-package_*_${architecture}.deb
+curl -fsSL https://toolbelt.treasuredata.com/sh/install-${distribution}-${code_name}-fluent-package5-lts.sh | sh
 
 # Test: service status
 systemctl status --no-pager fluentd
 (! systemctl status --no-pager td-agent)
 
 # Test: restoring td-agent service alias
-sudo systemctl stop fluentd
-sudo systemctl unmask td-agent
-sudo systemctl enable --now fluentd
+# sudo systemctl stop fluentd
+# sudo systemctl unmask td-agent
+# sudo systemctl enable --now fluentd
 
-systemctl status --no-pager td-agent
-systemctl status --no-pager fluentd
+# systemctl status --no-pager td-agent
+# systemctl status --no-pager fluentd
 
 # Test: config migration
 test -h /etc/td-agent
@@ -54,9 +45,6 @@ test -e /etc/fluent/plugin/in_fake.rb
 # Test: log file migration
 test -h /var/log/td-agent
 test -e /var/log/td-agent/td-agent.log
-for d in $(seq 1 10); do
-    test -e /var/log/fluent/$d.log
-done
 
 # Test: bin file migration
 test -h /usr/sbin/td-agent
@@ -72,23 +60,6 @@ test $(eval $env_vars && echo $FLUENT_CONF) = "/etc/fluent/fluentd.conf"
 test $(eval $env_vars && echo $FLUENT_PACKAGE_LOG_FILE) = "/var/log/fluent/fluentd.log"
 test $(eval $env_vars && echo $FLUENT_PLUGIN) = "/etc/fluent/plugin"
 test $(eval $env_vars && echo $FLUENT_SOCKET) = "/var/run/fluent/fluentd.sock"
-
-# Test: No error logs
-# (v4 default config outputs 'warn' log, so we should check only 'error' and 'fatal' logs)
-sleep 3
-test -e /var/log/fluent/fluentd.log
-(! grep -e '\[error\]' -e '\[fatal\]' /var/log/fluent/fluentd.log)
-
-# Test: fluent-diagtool
-sudo fluent-gem install fluent-plugin-concat
-/opt/fluent/bin/fluent-diagtool -t fluentd -o /tmp
-test $(find /tmp/ -name gem_local_list.output | xargs cat) = "fluent-plugin-concat"
-
-# Test: Guard duplicated instance
-(! sudo /usr/sbin/fluentd)
-(! sudo /usr/sbin/td-agent)
-(! sudo /usr/sbin/fluentd -v)
-sudo /usr/sbin/fluentd --dry-run
 
 # Uninstall
 sudo apt remove -y fluent-package

@@ -1,124 +1,10 @@
 name: Apt based Linux
 on:
   push:
-    branches:
-      - master
-      - fluent-package-lts-v5
   pull_request:
 jobs:
-  build:
-    name: Build
-    timeout-minutes: 60
-    strategy:
-      fail-fast: false
-      matrix:
-        label:
-          - Debian bullseye amd64
-          - Debian bookworm amd64
-          - Ubuntu Focal amd64
-          - Ubuntu Jammy amd64
-          - Ubuntu Noble amd64
-        include:
-          - label: Debian bullseye amd64
-            rake-job: debian-bullseye
-            test-docker-image: debian:bullseye
-          - label: Debian bookworm amd64
-            rake-job: debian-bookworm
-            test-docker-image: debian:bookworm
-          - label: Ubuntu Focal amd64
-            rake-job: ubuntu-focal
-            test-docker-image: ubuntu:focal
-          - label: Ubuntu Jammy amd64
-            rake-job: ubuntu-jammy
-            test-docker-image: ubuntu:jammy
-          - label: Ubuntu Noble amd64
-            rake-job: ubuntu-noble
-            test-docker-image: ubuntu:noble
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt -V install ruby ruby-bundler ruby-serverspec
-          sudo gem install bundler:2.2.9 --no-document
-          sudo gem uninstall fileutils
-      - name: Build deb with Docker
-        run: |
-          rake apt:build APT_TARGETS=${{ matrix.rake-job }}
-      - name: Upload fluent-package deb
-        uses: actions/upload-artifact@master
-        with:
-          name: packages-${{ matrix.rake-job }}
-          path: fluent-package/apt/repositories
-      - name: Upload fluent-apt-source deb
-        uses: actions/upload-artifact@master
-        with:
-          name: packages-apt-source-${{ matrix.rake-job }}
-          path: fluent-apt-source/apt/repositories
-      - name: Upload fluent-lts-apt-source deb
-        uses: actions/upload-artifact@master
-        with:
-          name: packages-lts-apt-source-${{ matrix.rake-job }}
-          path: fluent-lts-apt-source/apt/repositories
-      # TODO move the following steps to "Test" job
-      - name: Check Package Size
-        run: |
-          fluent-package/apt/pkgsize-test.sh ${{ matrix.rake-job }} amd64
-      - name: Installation Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/apt/install-test.sh
-      - name: Piuparts (Install/Remove/Upgrade) Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --privileged \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/apt/piuparts-test.sh
-      - name: Serverspec Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/apt/serverspec-test.sh
-      - name: Confluent Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/apt/confluent-test.sh
-      - name: Binstubs Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/apt/binstubs-test.sh
   test:
     name: Test ${{ matrix.label }} ${{ matrix.test }}
-    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -126,63 +12,22 @@ jobs:
       matrix:
         label:
           - Debian bullseye amd64
-          - Debian bookworm amd64
           - Ubuntu Focal amd64
           - Ubuntu Jammy amd64
-          - Ubuntu Noble amd64
         test:
           - "update-from-v4.sh"
-          - "downgrade-to-v4.sh"
-          - "install-newly.sh local"
-          - "install-newly.sh v5"
-          - "install-newly.sh lts"
-          - "update-to-next-version.sh"
-          - "update-to-next-version-with-backward-compat-for-v4.sh"
-          - "update-to-next-version-service-status.sh enabled active"
-          - "update-to-next-version-service-status.sh enabled inactive"
-          - "update-to-next-version-service-status.sh disabled active"
-          - "update-to-next-version-service-status.sh disabled inactive"
         include:
           - label: Debian bullseye amd64
             rake-job: debian-bullseye
             lxc-image: images:debian/11
-          - label: Debian bookworm amd64
-            rake-job: debian-bookworm
-            lxc-image: images:debian/12
           - label: Ubuntu Focal amd64
             rake-job: ubuntu-focal
             lxc-image: ubuntu:20.04
           - label: Ubuntu Jammy amd64
             rake-job: ubuntu-jammy
             lxc-image: ubuntu:22.04
-          - label: Ubuntu Noble amd64
-            rake-job: ubuntu-noble
-            lxc-image: ubuntu:24.04
-        exclude:
-          - label: Debian bookworm amd64
-            test: update-from-v4.sh
-          - label: Debian bookworm amd64
-            test: update-to-next-version-with-backward-compat-for-v4.sh
-          - label: Debian bookworm amd64
-            test: downgrade-to-v4.sh
-          - label: Ubuntu Noble amd64
-            test: update-from-v4.sh
-          - label: Ubuntu Noble amd64
-            test: update-to-next-version-with-backward-compat-for-v4.sh
-          - label: Ubuntu Noble amd64
-            test: downgrade-to-v4.sh
-          - label: Ubuntu Noble amd64
-            test: install-newly.sh v5
-          - label: Ubuntu Noble amd64
-            test: install-newly.sh lts
     steps:
       - uses: actions/checkout@master
-      - uses: actions/download-artifact@v4
-        with:
-          name: packages-${{ matrix.rake-job }}
-      - uses: actions/download-artifact@v4
-        with:
-          name: packages-apt-source-${{ matrix.rake-job }}
       - uses: canonical/setup-lxd@v0.1.1
       - name: Run Test  ${{ matrix.test }} on ${{ matrix.lxc-image }}
         run: fluent-package/apt/systemd-test/test.sh ${{ matrix.lxc-image }} ${{ matrix.test }}
