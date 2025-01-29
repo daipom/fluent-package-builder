@@ -1,9 +1,6 @@
 name: Windows
 on:
   push:
-    branches:
-      - master
-      - fluent-package-v5
   pull_request:
 concurrency:
   group: ${{ github.head_ref || github.sha }}-${{ github.workflow }}
