@@ -34,6 +34,9 @@ sudo $DNF install -y \
 # Test: take over enabled state
 systemctl is-enabled fluentd
 
+# DEBUG
+cat /var/log/fluent/fluentd.log
+
 # Test: service status
 systemctl status --no-pager fluentd
 systemctl status --no-pager td-agent
