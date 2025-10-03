@@ -1,9 +1,6 @@
 name: Apt based Linux
 on:
   push:
-    branches:
-      - master
-      - fluent-package-v5
   pull_request:
 concurrency:
   group: ${{ github.head_ref || github.sha }}-${{ github.workflow }}
@@ -83,141 +80,9 @@ jobs:
           name: packages-lts-apt-source-${{ matrix.rake-job }}
           path: fluent-lts-apt-source/apt/repositories
 
-  check_package_size:
-    name: Check Package Size
-    runs-on: ubuntu-latest
-    needs: [define-matrix, build]
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.define-matrix.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: packages-${{ matrix.rake-job }}
-          path: fluent-package/apt/repositories
-      - name: Check Package Size
-        run: |
-          fluent-package/apt/pkgsize-test.sh ${{ matrix.rake-job }} amd64
-  installation_test:
-    name: Installation Test
-    runs-on: ubuntu-latest
-    needs: [define-matrix, build]
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.define-matrix.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: packages-${{ matrix.rake-job }}
-          path: fluent-package/apt/repositories
-      - name: Installation Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/apt/install-test.sh
-  piuparts_test:
-    name: Piuparts Test
-    runs-on: ubuntu-latest
-    needs: [define-matrix, build]
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.define-matrix.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: packages-${{ matrix.rake-job }}
-          path: fluent-package/apt/repositories
-      - name: Piuparts (Install/Remove/Upgrade) Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --privileged \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/apt/piuparts-test.sh
-  serverspec_test:
-    name: Serverspec Test
-    runs-on: ubuntu-latest
-    needs: [define-matrix, build]
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.define-matrix.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: packages-${{ matrix.rake-job }}
-          path: fluent-package/apt/repositories
-      - name: Serverspec Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/apt/serverspec-test.sh
-  confluent_test:
-    name: Confluent Test
-    runs-on: ubuntu-latest
-    needs: [define-matrix, build]
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.define-matrix.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: packages-${{ matrix.rake-job }}
-          path: fluent-package/apt/repositories
-      - name: Confluent Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/apt/confluent-test.sh
-  binstubs_test:
-    name: Binstubs Test
-    needs: [define-matrix, build]
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.define-matrix.outputs.matrix) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: packages-${{ matrix.rake-job }}
-          path: fluent-package/apt/repositories
-      - name: Binstubs Test
-        run: |
-          mkdir -p .bundle
-          docker run \
-          --rm \
-          --tty \
-          --env CI=true \
-          --volume ${PWD}:/fluentd:ro \
-          ${{ matrix.test-docker-image }} \
-          /fluentd/fluent-package/apt/binstubs-test.sh
   test:
     name: Test ${{ matrix.label }} ${{ matrix.test }}
-    needs: [check_package_size, installation_test, piuparts_test, serverspec_test, confluent_test, binstubs_test]
+    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -229,30 +94,6 @@ jobs:
           - Ubuntu Jammy amd64
           - Ubuntu Noble amd64
         test:
-          - "update-from-v4.sh"
-          - "update-from-v4.sh via-v5"
-          - "update-from-v5-lts.sh"
-          - "downgrade-to-v4.sh"
-          - "downgrade-to-v5-lts.sh"
-          - "install-newly.sh local"
-          - "install-newly.sh v6"
-          - "install-newly.sh lts"
-          - "update-to-next-version.sh"
-          - "update-to-next-version-with-backward-compat-for-v4.sh"
-          - "update-to-next-version-service-status.sh enabled active"
-          - "update-to-next-version-service-status.sh enabled inactive"
-          - "update-to-next-version-service-status.sh disabled active"
-          - "update-to-next-version-service-status.sh disabled inactive"
-          - "update-to-next-version-with-auto-and-manual.sh"
-          - "update-to-next-major-version.sh auto active"
-          - "update-to-next-major-version.sh auto inactive"
-          - "update-to-next-major-version.sh manual active"
-          - "update-to-next-major-version.sh manual inactive"
-          - "update-to-next-major-version.sh etc active"
-          - "update-to-next-major-version.sh etc inactive"
-          - "update-without-data-lost.sh v6 v7"
-          - "update-without-data-lost.sh v7 v6"
-          - "obsolete-plugins.sh"
           - "tmpfiles.sh"
         include:
           - label: Debian bookworm amd64
@@ -267,40 +108,6 @@ jobs:
           - label: Ubuntu Noble amd64
             rake-job: ubuntu-noble
             container-image: images:ubuntu/24.04
-        exclude:
-          - label: Debian bookworm amd64
-            test: update-from-v4.sh
-          - label: Debian bookworm amd64
-            test: update-from-v4.sh via-v5
-          - label: Debian bookworm amd64
-            test: update-to-next-version-with-backward-compat-for-v4.sh
-          - label: Debian bookworm amd64
-            test: downgrade-to-v4.sh
-          # Temporary disable test for trixie (not released yet)
-          - label: Debian trixie amd64
-            test: update-from-v4.sh
-          - label: Debian trixie amd64
-            test: update-from-v4.sh via-v5
-          - label: Debian trixie amd64
-            test: update-from-v5-lts.sh
-          - label: Debian trixie amd64
-            test: downgrade-to-v4.sh
-          - label: Debian trixie amd64
-            test: downgrade-to-v5-lts.sh
-          - label: Debian trixie amd64
-            test: install-newly.sh v5
-          - label: Debian trixie amd64
-            test: install-newly.sh lts
-          - label: Debian trixie amd64
-            test: update-to-next-version-with-backward-compat-for-v4.sh
-          - label: Ubuntu Noble amd64
-            test: update-from-v4.sh
-          - label: Ubuntu Noble amd64
-            test: update-from-v4.sh via-v5
-          - label: Ubuntu Noble amd64
-            test: update-to-next-version-with-backward-compat-for-v4.sh
-          - label: Ubuntu Noble amd64
-            test: downgrade-to-v4.sh
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4

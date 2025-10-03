@@ -11,6 +11,8 @@ sudo systemctl cat systemd-tmpfiles-clean.timer
 # Install the built package
 install_current
 
+sudo systemd-tmpfiles --cat-config
+
 # Wait all processes to start
 (! systemctl status --no-pager fluentd)
 sudo systemctl enable --now fluentd

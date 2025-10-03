@@ -12,6 +12,8 @@ sudo systemctl cat systemd-tmpfiles-clean.timer
 sudo apt install -V -y \
     /host/${distribution}/pool/${code_name}/${channel}/*/*/fluent-package_*_${architecture}.deb
 
+sudo systemd-tmpfiles --cat-config
+
 # Wait all processes to start
 systemctl status --no-pager fluentd
 sleep 3
